@@ -29,6 +29,7 @@ func main() {
 
 	net.Start()
 
+	// ✅ передаём net в сервер — без этого события не рассылаются
 	srv := NewServer(net, *addr)
 	log.Printf("DSR Simulation → http://localhost%s", *addr)
 	log.Fatal(srv.ListenAndServe())
