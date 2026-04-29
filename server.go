@@ -156,7 +156,7 @@ canvas { display: block; }
 .sidebar-header .label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--grey3); margin-bottom: 6px; }
 .sidebar-header h1 { font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
 
-.sidebar-section { padding: 20px 24px; border-bottom: 1px solid var(--grey2); display: flex; flex-direction: column; gap: 10px; }
+.sidebar-section { padding: 16px 24px; border-bottom: 1px solid var(--grey2); display: flex; flex-direction: column; gap: 8px; }
 .section-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--grey3); }
 
 .field { display: flex; flex-direction: column; gap: 4px; }
@@ -174,33 +174,37 @@ select:focus { border-color: var(--black); }
 select:disabled { opacity: .4; cursor: not-allowed; }
 
 .btn {
-  width: 100%; padding: 10px 14px;
+  width: 100%; padding: 9px 14px;
   border: 1px solid var(--black); background: var(--black); color: var(--white);
   font-family: var(--mono); font-size: 11px; font-weight: 600;
   letter-spacing: .06em; text-transform: uppercase;
-  cursor: pointer; transition: background .15s, color .15s; border-radius: 0;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s; border-radius: 0;
 }
 .btn:hover:not(:disabled) { background: var(--white); color: var(--black); }
 .btn:disabled { opacity: .35; cursor: not-allowed; }
 .btn-ghost { background: var(--white); color: var(--black); }
 .btn-ghost:hover:not(:disabled) { background: var(--grey1); }
 
+.delay-row { display: flex; align-items: center; gap: 8px; }
+.delay-row input[type=range] { flex: 1; accent-color: var(--black); cursor: pointer; }
+#delay-val { font-family: var(--mono); font-size: 11px; color: var(--grey4); width: 48px; text-align: right; flex-shrink: 0; }
+
 .log-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 24px; gap: 8px; }
 #log { flex: 1; overflow-y: auto; font-family: var(--mono); font-size: 11px; line-height: 1.85; color: var(--grey4); scrollbar-width: thin; scrollbar-color: var(--grey2) transparent; }
-.log-line   { border-bottom: 1px solid var(--grey1); padding: 1px 0; }
+.log-line       { border-bottom: 1px solid var(--grey1); padding: 1px 0; }
 .log-line:last-child { border-bottom: none; }
-.log-err    { color: #b00020 !important; }
-.log-warn   { color: #996600 !important; }
-.log-rreq   { color: #c2410c !important; }
-.log-rrep   { color: #1d4ed8 !important; }
-.log-found  { color: #15803d !important; font-weight: 600; }
-.log-cache  { color: #7e22ce !important; }
-.log-dup    { color: #9ca3af !important; }
+.log-err        { color: #b00020 !important; }
+.log-warn       { color: #996600 !important; }
+.log-rreq       { color: #c2410c !important; }
+.log-rrep       { color: #1d4ed8 !important; }
+.log-found      { color: #15803d !important; font-weight: 600; }
+.log-cache      { color: #7e22ce !important; }
+.log-dup        { color: #9ca3af !important; }
 
-.stats-bar { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--grey2); }
-.stat { padding: 14px 24px; border-right: 1px solid var(--grey2); }
+.stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--grey2); }
+.stat { padding: 12px 16px; border-right: 1px solid var(--grey2); }
 .stat:last-child { border-right: none; }
-.stat-value { font-family: var(--mono); font-size: 20px; font-weight: 600; line-height: 1; }
+.stat-value { font-family: var(--mono); font-size: 18px; font-weight: 600; line-height: 1; }
 .stat-label { font-size: 10px; color: var(--grey3); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
 
 #status {
@@ -240,8 +244,19 @@ select:disabled { opacity: .4; cursor: not-allowed; }
   </div>
 
   <div class="sidebar-section">
-    <button class="btn" id="btn-route" disabled onclick="startRoute()">Найти маршрут</button>
-    <button class="btn btn-ghost" onclick="resetSim()">Сбросить</button>
+    <button class="btn" id="btn-route" disabled onclick="startRoute()">▶ Найти маршрут</button>
+    <button class="btn btn-ghost" onclick="resetSim()">↺ Сбросить</button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="section-label">Воспроизведение</div>
+    <button class="btn btn-ghost" id="btn-mode" onclick="toggleMode()">▶ Режим: АВТО</button>
+    <button class="btn btn-ghost" id="btn-step" onclick="stepOnce()" style="display:none">⏭ Следующий шаг</button>
+    <div class="delay-row">
+      <span style="font-size:11px;color:var(--grey4)">Задержка</span>
+      <input type="range" min="100" max="3000" step="100" value="800" oninput="updateDelay(this.value)">
+      <span id="delay-val">800 мс</span>
+    </div>
   </div>
 
   <div class="log-section">
@@ -260,6 +275,10 @@ select:disabled { opacity: .4; cursor: not-allowed; }
       <div class="stat-value" id="stat-edges">—</div>
       <div class="stat-label">Рёбер</div>
     </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-queue">0</div>
+      <div class="stat-label">Очередь</div>
+    </div>
   </div>
 </div>
 
@@ -277,8 +296,13 @@ var nodes       = [];
 var edges       = [];
 var positions   = {};
 var hoveredNode = null;
-var edgeColors  = {};   // временные цвета (мигание RREQ/RREP)
-var routeEdges  = {};   // постоянные цвета найденного маршрута
+var edgeColors  = {};
+var routeEdges  = {};
+
+var eventQueue  = [];
+var stepMode    = false;
+var stepDelay   = 800;
+var replayTimer = null;
 
 // ── WebSocket ──────────────────────────────────────────────────────────────
 var ws = new WebSocket('ws://' + location.host + '/ws');
@@ -297,92 +321,26 @@ ws.onmessage = function(ev) {
 
   console.log('[DSR] событие:', data);
 
-  // ── Топология ──────────────────────────────────────────────────────────
   if (data.type === 'topology') {
-    var rawNodes = data.nodes || data.Nodes || [];
-    var rawEdges = data.edges || data.Edges || [];
-
-    nodes = rawNodes.map(function(n, i) {
-      if (typeof n === 'number' || typeof n === 'string') return { id: n };
-      return { id: (n.id !== undefined) ? n.id : (n.ID !== undefined) ? n.ID : i };
-    });
-
-    edges = rawEdges.map(function(e) {
-      if (Array.isArray(e)) return { from: e[0], to: e[1] };
-      return {
-        from: (e.from !== undefined) ? e.from : e.From,
-        to:   (e.to   !== undefined) ? e.to   : e.To
-      };
-    });
-
-    resizeCanvas();
-    layoutNodes();
-    draw();
-    fillSelects();
-
-    document.getElementById('stat-nodes').textContent = nodes.length;
-    document.getElementById('stat-edges').textContent = edges.length;
-    document.getElementById('btn-route').disabled = false;
-
-    setStatus('Топология загружена — ' + nodes.length + ' узлов, ' + edges.length + ' рёбер');
-    addLog('Получено: ' + nodes.length + ' узлов, ' + edges.length + ' рёбер');
+    handleTopology(data);
     return;
   }
-
-  // ── RREQ ───────────────────────────────────────────────────────────────
-  if (data.type === 'rreq') {
-    flashEdge(data.from, data.to, '#f97316', 600);
-    addLog('RREQ [' + data.rreqId + ']: ' + data.from + ' → ' + data.to +
-           ' | путь: [' + (data.routeRecord || []).join('→') + ']', 'rreq');
-    setStatus('RREQ: ' + data.from + ' → ' + data.to);
-    return;
-  }
-
-  // ── RREP ───────────────────────────────────────────────────────────────
-  if (data.type === 'rrep') {
-    flashEdge(data.from, data.to, '#3b82f6', 600);
-    addLog('RREP: ' + data.from + ' → ' + data.to +
-           ' | маршрут: [' + (data.route || []).join('→') + ']', 'rrep');
-    setStatus('RREP: ' + data.from + ' → ' + data.to);
-    return;
-  }
-
-  // ── Маршрут найден ─────────────────────────────────────────────────────
-  if (data.type === 'route_found') {
-    paintRoute(data.route, '#16a34a');
-    addLog('✓ МАРШРУТ: ' + (data.route || []).join(' → '), 'found');
-    setStatus('Маршрут найден: ' + (data.route || []).join(' → '));
-    return;
-  }
-
-  // ── Кэш ────────────────────────────────────────────────────────────────
-  if (data.type === 'cache_hit') {
-    paintRoute(data.route, '#9333ea');
-    addLog('⚡ Кэш узла ' + data.node + ': [' + (data.route || []).join('→') + ']', 'cache');
-    setStatus('Маршрут из кэша!');
-    return;
-  }
-
-  // ── Дубликат RREQ ──────────────────────────────────────────────────────
-  if (data.type === 'rreq_seen') {
-    addLog('⊘ Узел ' + data.node + ': дубль RREQ [' + data.rreqId + ']', 'dup');
-    return;
-  }
-
-  // ── Лог ────────────────────────────────────────────────────────────────
-  if (data.type === 'log') {
-    addLog(data.message);
-    return;
-  }
-
-  // ── Сброс ──────────────────────────────────────────────────────────────
   if (data.type === 'reset') {
-    edgeColors = {};
-    routeEdges = {};
+    eventQueue  = [];
+    edgeColors  = {};
+    routeEdges  = {};
     draw();
+    updateQueueBadge();
     addLog('Симуляция сброшена');
     setStatus('Сброс выполнен');
     return;
+  }
+
+  eventQueue.push(data);
+  updateQueueBadge();
+
+  if (!stepMode && !replayTimer) {
+    scheduleNext();
   }
 };
 
@@ -396,7 +354,107 @@ ws.onclose = function() {
   addLog('WebSocket закрыт');
 };
 
-// ── Canvas resize ─────────────────────────────────────────────────────────
+// ── Воспроизведение очереди ────────────────────────────────────────────────
+function scheduleNext() {
+  if (stepMode || eventQueue.length === 0) {
+    replayTimer = null;
+    return;
+  }
+  processNextEvent();
+  replayTimer = setTimeout(scheduleNext, stepDelay);
+}
+
+function stepOnce() {
+  if (eventQueue.length === 0) return;
+  clearTimeout(replayTimer);
+  replayTimer = null;
+  processNextEvent();
+  updateQueueBadge();
+}
+
+function processNextEvent() {
+  if (eventQueue.length === 0) return;
+  var data = eventQueue.shift();
+  updateQueueBadge();
+  dispatchEvent(data);
+}
+
+// ── Диспетчер событий ──────────────────────────────────────────────────────
+function dispatchEvent(data) {
+  if (data.type === 'rreq') {
+    flashEdge(data.from, data.to, '#f97316', stepDelay * 1.5);
+    flashNode(data.to,   '#7c3a00', stepDelay);
+    addLog('RREQ [' + data.rreqId + ']: ' + data.from + ' → ' + data.to +
+           ' | путь: [' + (data.routeRecord || []).join('→') + ']', 'rreq');
+    setStatus('RREQ: ' + data.from + ' → ' + data.to);
+    return;
+  }
+
+  if (data.type === 'rrep') {
+    flashEdge(data.from, data.to, '#3b82f6', stepDelay * 1.5);
+    flashNode(data.from, '#1e3a8a', stepDelay);
+    addLog('RREP: ' + data.from + ' → ' + data.to +
+           ' | маршрут: [' + (data.route || []).join('→') + ']', 'rrep');
+    setStatus('RREP: ' + data.from + ' → ' + data.to);
+    return;
+  }
+
+  if (data.type === 'route_found') {
+    paintRoute(data.route, '#16a34a');
+    addLog('✓ МАРШРУТ: ' + (data.route || []).join(' → '), 'found');
+    setStatus('Маршрут найден: ' + (data.route || []).join(' → '));
+    return;
+  }
+
+  if (data.type === 'cache_hit') {
+    paintRoute(data.route, '#9333ea');
+    addLog('⚡ Кэш узла ' + data.node + ': [' + (data.route || []).join('→') + ']', 'cache');
+    setStatus('Маршрут из кэша!');
+    return;
+  }
+
+  if (data.type === 'rreq_seen') {
+    addLog('⊘ Узел ' + data.node + ': дубль RREQ [' + data.rreqId + ']', 'dup');
+    return;
+  }
+
+  if (data.type === 'log') {
+    addLog(data.message);
+    return;
+  }
+}
+
+// ── Топология ──────────────────────────────────────────────────────────────
+function handleTopology(data) {
+  var rawNodes = data.nodes || data.Nodes || [];
+  var rawEdges = data.edges || data.Edges || [];
+
+  nodes = rawNodes.map(function(n, i) {
+    if (typeof n === 'number' || typeof n === 'string') return { id: n };
+    return { id: (n.id !== undefined) ? n.id : (n.ID !== undefined) ? n.ID : i };
+  });
+  edges = rawEdges.map(function(e) {
+    if (Array.isArray(e)) return { from: e[0], to: e[1] };
+    return {
+      from: (e.from !== undefined) ? e.from : e.From,
+      to:   (e.to   !== undefined) ? e.to   : e.To
+    };
+  });
+
+  resizeCanvas();
+  layoutNodes();
+  draw();
+  fillSelects();
+
+  document.getElementById('stat-nodes').textContent = nodes.length;
+  document.getElementById('stat-edges').textContent = edges.length;
+  document.getElementById('btn-route').disabled = false;
+
+  setStatus('Топология загружена — ' + nodes.length + ' узлов, ' + edges.length + ' рёбер');
+  addLog('Получено: ' + nodes.length + ' узлов, ' + edges.length + ' рёбер');
+}
+
+// ── Canvas resize ──────────────────────────────────────────────────────────
 function resizeCanvas() {
   var p = canvas.parentElement;
   canvas.width  = p.clientWidth;
@@ -408,7 +466,7 @@ window.addEventListener('resize', function() {
   if (nodes.length) { layoutNodes(); draw(); }
 });
 
-// ── Layout ────────────────────────────────────────────────────────────────
+// ── Layout ─────────────────────────────────────────────────────────────────
 function layoutNodes() {
   var w = canvas.width, h = canvas.height;
   var cx = w / 2, cy = h / 2;
@@ -424,22 +482,23 @@ function layoutNodes() {
   });
 }
 
-// ── Draw ──────────────────────────────────────────────────────────────────
+// ── Draw ───────────────────────────────────────────────────────────────────
 function edgeKey(u, v) {
   return Math.min(u, v) + '-' + Math.max(u, v);
 }
 
+var nodeColors = {};
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Рёбра
   edges.forEach(function(e) {
-    var a = positions[e.from];
-    var b = positions[e.to];
+    var a   = positions[e.from];
+    var b   = positions[e.to];
     if (!a || !b) return;
     var key = edgeKey(e.from, e.to);
     var col = edgeColors[key] || routeEdges[key] || '#c8c8c8';
-    var w   = (edgeColors[key] || routeEdges[key]) ? 3.5 : 1.5;
+    var w   = (edgeColors[key] || routeEdges[key]) ? 4 : 1.5;
     ctx.strokeStyle = col;
     ctx.lineWidth   = w;
     ctx.beginPath();
@@ -448,25 +507,28 @@ function draw() {
     ctx.stroke();
   });
 
-  // Узлы
   nodes.forEach(function(node) {
     var p = positions[node.id];
     if (!p) return;
-    var isHov = (hoveredNode === node.id);
-    var r     = isHov ? 18 : 14;
+    var isHov  = (hoveredNode === node.id);
+    var nodeCol = nodeColors[node.id];
+    var r      = isHov ? 18 : 14;
 
-    if (isHov) { ctx.shadowColor = 'rgba(0,0,0,.14)'; ctx.shadowBlur = 14; }
+    if (isHov || nodeCol) {
+      ctx.shadowColor = nodeCol ? nodeCol : 'rgba(0,0,0,.14)';
+      ctx.shadowBlur  = 16;
+    }
 
-    ctx.fillStyle   = isHov ? '#0a0a0a' : '#ffffff';
-    ctx.strokeStyle = '#0a0a0a';
-    ctx.lineWidth   = isHov ? 2 : 1;
+    ctx.fillStyle   = nodeCol ? nodeCol : (isHov ? '#0a0a0a' : '#ffffff');
+    ctx.strokeStyle = nodeCol ? nodeCol : '#0a0a0a';
+    ctx.lineWidth   = 2;
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    ctx.shadowBlur = 0;
+    ctx.shadowBlur  = 0;
 
-    ctx.fillStyle    = isHov ? '#ffffff' : '#0a0a0a';
+    ctx.fillStyle    = (nodeCol || isHov) ? '#ffffff' : '#0a0a0a';
     ctx.font         = 'bold 10px "IBM Plex Mono", monospace';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
@@ -474,15 +536,18 @@ function draw() {
   });
 }
 
-// ── Edge animations ───────────────────────────────────────────────────────
+// ── Анимации ───────────────────────────────────────────────────────────────
 function flashEdge(u, v, color, duration) {
   var key = edgeKey(u, v);
   edgeColors[key] = color;
   draw();
-  setTimeout(function() {
-    delete edgeColors[key];
-    draw();
-  }, duration || 600);
+  setTimeout(function() { delete edgeColors[key]; draw(); }, duration || 800);
+}
+
+function flashNode(id, color, duration) {
+  nodeColors[id] = color;
+  draw();
+  setTimeout(function() { delete nodeColors[id]; draw(); }, duration || 600);
 }
 
 function paintRoute(route, color) {
@@ -494,12 +559,12 @@ function paintRoute(route, color) {
   draw();
 }
 
-// ── Hover ─────────────────────────────────────────────────────────────────
+// ── Hover ──────────────────────────────────────────────────────────────────
 canvas.addEventListener('mousemove', function(ev) {
   if (!nodes.length) return;
   var rect = canvas.getBoundingClientRect();
-  var mx = ev.clientX - rect.left;
-  var my = ev.clientY - rect.top;
+  var mx   = ev.clientX - rect.left;
+  var my   = ev.clientY - rect.top;
   var found = null, best = 500;
 
   nodes.forEach(function(node) {
@@ -513,8 +578,8 @@ canvas.addEventListener('mousemove', function(ev) {
   if (hit) {
     if (hoveredNode !== found.id) { hoveredNode = found.id; draw(); }
     tooltip.style.opacity = '1';
-    tooltip.style.left    = (ev.clientX - rect.left + 16) + 'px';
-    tooltip.style.top     = (ev.clientY - rect.top  - 12) + 'px';
+    tooltip.style.left    = (mx + 16) + 'px';
+    tooltip.style.top     = (my - 12) + 'px';
     tooltip.textContent   = 'Узел ' + found.id;
   } else {
     if (hoveredNode !== null) { hoveredNode = null; draw(); }
@@ -528,7 +593,7 @@ canvas.addEventListener('mouseleave', function() {
   draw();
 });
 
-// ── Selects ───────────────────────────────────────────────────────────────
+// ── Selects ────────────────────────────────────────────────────────────────
 function fillSelects() {
   var src = document.getElementById('source');
   var dst = document.getElementById('destination');
@@ -541,7 +606,7 @@ function fillSelects() {
   if (nodes.length > 1) dst.selectedIndex = nodes.length - 1;
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────
+// ── Управление ─────────────────────────────────────────────────────────────
 function startRoute() {
   var src = parseInt(document.getElementById('source').value);
   var dst = parseInt(document.getElementById('destination').value);
@@ -549,32 +614,75 @@ function startRoute() {
     addLog('[предупреждение] Источник и назначение совпадают', 'warn');
     return;
   }
-  routeEdges = {};
+
+  clearTimeout(replayTimer);
+  replayTimer = null;
+  eventQueue  = [];
   edgeColors  = {};
+  routeEdges  = {};
+  nodeColors  = {};
   draw();
+  updateQueueBadge();
+
   addLog('Поиск маршрута: ' + src + ' → ' + dst);
-  setStatus('Поиск маршрута ' + src + ' → ' + dst + '...');
+  setStatus('Поиск ' + src + ' → ' + dst + '...');
+
   fetch('/api/route', {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ source: src, destination: dst })
+    body:    JSON.stringify({ source: src, destination: dst })
   }).then(function(r) { return r.json(); })
     .then(function(d) { if (d.error) addLog('[ошибка] ' + d.error, 'err'); })
     .catch(function(e) { addLog('[ошибка] /api/route: ' + e, 'err'); });
 }
 
 function resetSim() {
-  fetch('/api/reset', { method: 'POST' })
-    .catch(function(e) { addLog('[ошибка] /api/reset: ' + e, 'err'); });
-  document.getElementById('log').innerHTML = '';
-  edgeColors = {};
-  routeEdges = {};
+  clearTimeout(replayTimer);
+  replayTimer = null;
+  eventQueue  = [];
+  edgeColors  = {};
+  routeEdges  = {};
+  nodeColors  = {};
   draw();
+  updateQueueBadge();
+  document.getElementById('log').innerHTML = '';
   addLog('Симуляция сброшена');
   setStatus('Сброс выполнен');
+  fetch('/api/reset', { method: 'POST' })
+    .catch(function(e) { addLog('[ошибка] /api/reset: ' + e, 'err'); });
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+function toggleMode() {
+  stepMode = !stepMode;
+  var btn = document.getElementById('btn-mode');
+  document.getElementById('btn-step').style.display = stepMode ? 'block' : 'none';
+
+  if (stepMode) {
+    btn.textContent = '⏸ Режим: ШАГ';
+    btn.style.background = '#1a3a1a';
+    btn.style.color      = '#4ade80';
+    btn.style.borderColor= '#4ade80';
+    clearTimeout(replayTimer);
+    replayTimer = null;
+  } else {
+    btn.textContent = '▶ Режим: АВТО';
+    btn.style.background = '';
+    btn.style.color      = '';
+    btn.style.borderColor= '';
+    if (eventQueue.length > 0) scheduleNext();
+  }
+}
+
+function updateDelay(val) {
+  stepDelay = parseInt(val);
+  document.getElementById('delay-val').textContent = val + ' мс';
+}
+
+function updateQueueBadge() {
+  document.getElementById('stat-queue').textContent = eventQueue.length;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
 function setStatus(txt) { document.getElementById('status').textContent = txt; }
 
 function addLog(msg, type) {
